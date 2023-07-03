@@ -6,41 +6,60 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.urlencoded())
 
+async function getUsers() {
+    let users = [];
+    try {
+        users = JSON.parse(await readFile('./users.json'))
+    } catch (e) {
+        console.error(e.code)
+        if (e.code === "ENOENT") {
+            await writeFile("users.json", "[]");
+            users = [];
+        }
+        else {
+            console.error(`Uncaught exception: ${e.code}`);
+            console.error(e)
+            process.exit(-1)
+        }
+    }
+    return users;
+}
+
+async function writeUser() {
+    const users = await getUsers();
+    return writeFile('users.json', JSON.stringify(users.concat(req.body)))
+}
+
 let n = 0;
 
 
 app.all('/', async (req, res, next) => {
     if (['POST', "GET"].includes(req.method)) {
-        let users = [];
-        try {
-            users = JSON.parse(await readFile('./users.json'))
-        } catch (e) {
-            console.error(e.code)
-            if (e.code === "ENOENT") {
-                await writeFile("users.json", "[]");
-                users = [];
-            }
-            else {
-                console.error(`Uncaught exception: ${e.code}`);
-                console.error(e)
-                process.exit(-1)
-            }
-        }
+        const users = await getUsers();
         if (req.method === "POST") {
-            // readFile('users.json')
-            //     .catch(x => { writeFile('users.json', '[]'); return []; })
-            //     .then(file => JSON.parse(file))
-            //     .then(res => {
-            //         console.log(res.concat(req.body))
-            //     })
-            users = users.concat(req.body)
-            writeFile('users.json', JSON.stringify(users))
-            // users.push(req.body);
+            await writeUser();
         }
         n++;
         res.status(200).render('index', { ip: req.socket.remoteAddress, n, users })
     }
     else next();
+})
+
+app.get('/login', (req, res) => res.status(200).render('login', { error: false }))
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const users = await getUsers();
+    const currentUser = users.find(({ username: foundUsername }) => foundUsername === username);
+    if (currentUser === undefined || currentUser?.password !== password) res.status(404).render('login', { error: true })
+    else res.status(200).redirect('/')
+
+})
+
+app.get('/register', (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
+app.post('/register', async (req, res) => {
+    let users = [];
+    writeUsers();
+    res.status(201).sendFile('pages/register.html', { root: '.' })
 })
 
 app.use('/static', express.static('static'))
