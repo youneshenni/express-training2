@@ -25,9 +25,9 @@ async function getUsers() {
     return users;
 }
 
-async function writeUser() {
+async function writeUser(user) {
     const users = await getUsers();
-    return writeFile('users.json', JSON.stringify(users.concat(req.body)))
+    return writeFile('users.json', JSON.stringify(users.concat(user)))
 }
 
 let n = 0;
@@ -37,7 +37,7 @@ app.all('/', async (req, res, next) => {
     if (['POST', "GET"].includes(req.method)) {
         const users = await getUsers();
         if (req.method === "POST") {
-            await writeUser();
+            await writeUser(req.body);
         }
         n++;
         res.status(200).render('index', { ip: req.socket.remoteAddress, n, users })
@@ -57,9 +57,8 @@ app.post('/login', async (req, res) => {
 
 app.get('/register', (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
 app.post('/register', async (req, res) => {
-    let users = [];
-    writeUsers();
-    res.status(201).sendFile('pages/register.html', { root: '.' })
+    await writeUser(req.body);
+    res.status(303).redirect('/login')
 })
 
 app.use('/static', express.static('static'))
