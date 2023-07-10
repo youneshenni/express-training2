@@ -6,7 +6,7 @@ const pepper = "PEPPER";
 const app = express();
 
 app.set('view engine', 'ejs');
-app.use(express.urlencoded())
+app.use(express.json())
 
 async function getUsers() {
     let users = [];
@@ -47,13 +47,13 @@ app.all('/', async (req, res, next) => {
     else next();
 })
 
-app.get('/login', (req, res) => res.status(200).render('login', { error: false }))
+app.get('/login', (req, res) => res.status(200).render('login', { error: false, success: false }))
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     const users = await getUsers();
     const currentUser = users.find(({ username: foundUsername }) => foundUsername === username);
-    if (currentUser === undefined || hashSync(password, currentUser.salt + pepper) !== currentUser.password) res.status(404).render('login', { error: true })
-    else res.status(200).redirect('/')
+    if (currentUser === undefined || hashSync(password, currentUser.salt + pepper) !== currentUser.password) res.status(404).render('login', { error: true, success: false })
+    else res.status(200).send("Success")
 })
 
 app.get('/register', (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))

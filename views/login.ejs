@@ -11,12 +11,11 @@
 
 <body>
     <div class="container">
-        <form method="POST">
+        <form method="POST" id="form">
             <h1>Connexion:</h1>
 
             <label><b>Nom d'utilisateur:</b></label>
-            <input id="nom_utilisateur" type="text" placeholder="Entrer le nom d'utilisateur" name="username"
-                required />
+            <input id="username" type="text" placeholder="Entrer le nom d'utilisateur" name="username" required />
 
             <label><b>Mot de passe:</b></label>
             <input id="password" type="password" placeholder="Entrer le mot de passe" name="password" required />
@@ -25,9 +24,34 @@
             <% if (error) { %>
                 <span style="color: red">Combinaison mot de passe et nom d'utilisateur incorrecte</span>
                 <% } %>
+                    <% if (success) { %>
+                        <span style="color: green">
+                            <%= success %>
+                        </span>
+                        <% } %>
         </form>
         <a href="/register">Register</a>
     </div>
 </body>
+<script>
+    const form = document.getElementById("form");
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+        };
+        fetch('/login', {
+            method: "POST", body: JSON.stringify(data), headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(res => {
+            if (res.status !== 200) throw new Error("Error");
+            form.insertAdjacentText('beforebegin', "Connection effectuée avec succès");
+        }).catch(err => {
+            form.insertAdjacentText('afterend', err.message);
+        });
+    })
+</script>
 
 </html>
