@@ -64,6 +64,11 @@ app.post('/register', async (req, res) => {
 
 })
 
+app.get('/users', async (req, res) => {
+    const users = await getUsers();
+    res.status(200).json(users)
+});
+
 app.use('/static', express.static('static'))
 
 
