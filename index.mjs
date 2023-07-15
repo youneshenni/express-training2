@@ -3,6 +3,14 @@ import cookieParser from 'cookie-parser';
 import express from 'express'
 import { readFile, writeFile } from 'fs/promises'
 import jwt from 'jsonwebtoken'
+import morgan from 'morgan';
+import fs from 'fs';
+import path from 'path'
+
+import * as url from 'url';
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
 const pepper = "PEPPER";
 const secret = "SECRET";
 
@@ -59,11 +67,8 @@ function isNotAuthenticated(req, res, next) {
         next();
     }
 }
-
-app.use((req, res, next) => {
-    console.log(req.method, req.url)
-    next();
-})
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { stream: accessLogStream }))
 
 app.all('/', isAuthenticated, express.urlencoded(), async (req, res, next) => {
     if (['POST', "GET"].includes(req.method)) {

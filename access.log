@@ -1,0 +1,3 @@
+GET / 304 - - 11.819 ms
+GET /static/index.js 304 - - 2.204 ms
+GET /users 304 - - 2.746 ms
