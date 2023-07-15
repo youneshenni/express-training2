@@ -5,7 +5,7 @@ fetch("/users")
         document.querySelector("table > tbody").innerHTML = tableHTML;
     })
 
-document.querySelector("form").addEventListener("submit", e => {
+document.querySelector("form:nth-child(2)").addEventListener("submit", e => {
     e.preventDefault();
     const username = document.querySelector("#nom").value;
     const password = document.querySelector("#password").value;

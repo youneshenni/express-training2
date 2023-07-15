@@ -2,7 +2,9 @@ import { compareSync, genSaltSync, hashSync } from 'bcrypt';
 import cookieParser from 'cookie-parser';
 import express from 'express'
 import { readFile, writeFile } from 'fs/promises'
+import jwt from 'jsonwebtoken'
 const pepper = "PEPPER";
+const secret = "SECRET";
 
 const app = express();
 
@@ -37,14 +39,31 @@ app.use(cookieParser())
 let n = 0;
 
 function isAuthenticated(req, res, next) {
-    if (req.cookies.isConnected) next();
-    else res.redirect('/login');
+    try {
+        const { isConnected } = jwt.verify(req.cookies.jwt, secret);
+        if (isConnected) next();
+        else res.redirect('/login');
+    } catch (e) {
+        res.redirect('/login');
+        console.error(e)
+    }
 }
 
 function isNotAuthenticated(req, res, next) {
-    if (req.cookies.isConnected) res.redirect('/');
-    else next();
+    try {
+        const { isConnected } = jwt.verify(req.cookies.jwt, secret);
+        if (isConnected) res.redirect('/');
+        else next();
+    } catch (e) {
+        console.error(e)
+        next();
+    }
 }
+
+app.use((req, res, next) => {
+    console.log(req.method, req.url)
+    next();
+})
 
 app.all('/', isAuthenticated, express.urlencoded(), async (req, res, next) => {
     if (['POST', "GET"].includes(req.method)) {
@@ -65,7 +84,7 @@ app.post('/login', isNotAuthenticated, express.json(), async (req, res) => {
     const currentUser = users.find(({ username: foundUsername }) => foundUsername === username);
 
     if (currentUser === undefined || hashSync(password, currentUser.salt + pepper) !== currentUser.password) res.status(404).render('login', { error: true, success: false })
-    else { res.cookie('isConnected', 'true'); res.status(200).send("Success") }
+    else { res.cookie('jwt', jwt.sign({ isConnected: true }, secret)); res.status(200).send("Success") }
 })
 
 app.get('/register', isNotAuthenticated, (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
@@ -77,6 +96,7 @@ app.post('/register', isNotAuthenticated, express.urlencoded(), async (req, res)
 })
 
 app.post('/logout', isAuthenticated, (req, res) => {
+    console.log("Logging out...")
     res.clearCookie('isConnected');
     res.status(200).redirect('/login')
 });
