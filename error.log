@@ -1,0 +1,3 @@
+{"level":"error","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"error","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"error","message":"jwt malformed","name":"JsonWebTokenError","service":"user-service"}

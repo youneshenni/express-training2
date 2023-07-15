@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 import morgan from 'morgan';
 import fs from 'fs';
 import path from 'path'
+import winston from 'winston';
 
 import * as url from 'url';
 const __filename = url.fileURLToPath(import.meta.url);
@@ -46,6 +47,35 @@ app.use(cookieParser())
 
 let n = 0;
 
+
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    defaultMeta: { service: 'user-service' },
+    transports: [
+        //
+        // - Write all logs with importance level of `error` or less to `error.log`
+        // - Write all logs with importance level of `info` or less to `combined.log`
+        //
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' }),
+    ],
+});
+
+//
+// If we're not in production then log to the `console` with the format:
+// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
+//
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.simple(),
+    }));
+}
+
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { stream: accessLogStream }))
+
 function isAuthenticated(req, res, next) {
     try {
         const { isConnected } = jwt.verify(req.cookies.jwt, secret);
@@ -53,7 +83,7 @@ function isAuthenticated(req, res, next) {
         else res.redirect('/login');
     } catch (e) {
         res.redirect('/login');
-        console.error(e)
+        logger.log('info', e)
     }
 }
 
@@ -63,12 +93,10 @@ function isNotAuthenticated(req, res, next) {
         if (isConnected) res.redirect('/');
         else next();
     } catch (e) {
-        console.error(e)
+        logger.log('info', e)
         next();
     }
 }
-var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { stream: accessLogStream }))
 
 app.all('/', isAuthenticated, express.urlencoded(), async (req, res, next) => {
     if (['POST', "GET"].includes(req.method)) {
