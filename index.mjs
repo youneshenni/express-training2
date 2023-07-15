@@ -1,4 +1,5 @@
 import { compareSync, genSaltSync, hashSync } from 'bcrypt';
+import cookieParser from 'cookie-parser';
 import express from 'express'
 import { readFile, writeFile } from 'fs/promises'
 const pepper = "PEPPER";
@@ -31,16 +32,17 @@ async function writeUser(user) {
     return writeFile('users.json', JSON.stringify(users.concat(user)))
 }
 
+app.use(cookieParser())
+
 let n = 0;
-let isConnected = false;
 
 function isAuthenticated(req, res, next) {
-    if (isConnected) next();
+    if (req.cookies.isConnected) next();
     else res.redirect('/login');
 }
 
 function isNotAuthenticated(req, res, next) {
-    if (isConnected) res.redirect('/');
+    if (req.cookies.isConnected) res.redirect('/');
     else next();
 }
 
@@ -61,8 +63,9 @@ app.post('/login', isNotAuthenticated, express.json(), async (req, res) => {
     const { username, password } = req.body;
     const users = await getUsers();
     const currentUser = users.find(({ username: foundUsername }) => foundUsername === username);
+
     if (currentUser === undefined || hashSync(password, currentUser.salt + pepper) !== currentUser.password) res.status(404).render('login', { error: true, success: false })
-    else { isConnected = true; res.status(200).send("Success") }
+    else { res.cookie('isConnected', 'true'); res.status(200).send("Success") }
 })
 
 app.get('/register', isNotAuthenticated, (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
@@ -74,7 +77,7 @@ app.post('/register', isNotAuthenticated, express.urlencoded(), async (req, res)
 })
 
 app.post('/logout', isAuthenticated, (req, res) => {
-    isConnected = false;
+    res.clearCookie('isConnected');
     res.status(200).redirect('/login')
 });
 
