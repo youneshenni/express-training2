@@ -48,6 +48,10 @@
         }).then(res => {
             if (res.status !== 200) throw new Error("Error");
             form.insertAdjacentText('beforebegin', "Connection effectuée avec succès");
+            // redirect to home page
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 1000);
         }).catch(err => {
             form.insertAdjacentText('afterend', err.message);
         });

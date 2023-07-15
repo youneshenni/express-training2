@@ -32,9 +32,19 @@ async function writeUser(user) {
 }
 
 let n = 0;
+let isConnected = false;
 
+function isAuthenticated(req, res, next) {
+    if (isConnected) next();
+    else res.redirect('/login');
+}
 
-app.all('/', express.urlencoded(), async (req, res, next) => {
+function isNotAuthenticated(req, res, next) {
+    if (isConnected) res.redirect('/');
+    else next();
+}
+
+app.all('/', isAuthenticated, express.urlencoded(), async (req, res, next) => {
     if (['POST', "GET"].includes(req.method)) {
         const users = await getUsers();
         if (req.method === "POST") {
@@ -46,32 +56,50 @@ app.all('/', express.urlencoded(), async (req, res, next) => {
     else next();
 })
 
-app.get('/login', (req, res) => res.status(200).render('login', { error: false, success: false }))
-app.post('/login', express.json(), async (req, res) => {
+app.get('/login', isNotAuthenticated, (req, res) => res.status(200).render('login', { error: false, success: false }))
+app.post('/login', isNotAuthenticated, express.json(), async (req, res) => {
     const { username, password } = req.body;
     const users = await getUsers();
     const currentUser = users.find(({ username: foundUsername }) => foundUsername === username);
     if (currentUser === undefined || hashSync(password, currentUser.salt + pepper) !== currentUser.password) res.status(404).render('login', { error: true, success: false })
-    else res.status(200).send("Success")
+    else { isConnected = true; res.status(200).send("Success") }
 })
 
-app.get('/register', (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
-app.post('/register', express.urlencoded(), async (req, res) => {
+app.get('/register', isNotAuthenticated, (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
+app.post('/register', isNotAuthenticated, express.urlencoded(), async (req, res) => {
     const salt = genSaltSync();
     const hashedPassword = hashSync(req.body.password, salt + pepper);
     writeUser({ ...req.body, password: hashedPassword, salt })
-
+    res.status(200).redirect('/login')
 })
 
-app.get('/users', async (req, res) => {
+app.post('/logout', isAuthenticated, (req, res) => {
+    isConnected = false;
+    res.status(200).redirect('/login')
+});
+
+app.get('/users', isAuthenticated, async (req, res) => {
     const users = await getUsers();
     res.status(200).json(users)
 });
 
-app.post('/user', express.json(), async (req, res) => {
+app.post('/user', isAuthenticated, express.json(), async (req, res) => {
     const user = req.body;
     await writeUser(user);
     res.status(200).send("Success")
+})
+
+app.put('/user/:username', isAuthenticated, express.json(), async (req, res) => {
+    const { username } = req.params;
+    const user = req.body;
+    const users = await getUsers();
+    const index = users.findIndex(({ username: foundUsername }) => foundUsername === username);
+    if (index === -1) res.status(404).send("Not found")
+    else {
+        users[index] = user;
+        await writeFile('users.json', JSON.stringify(users))
+        res.status(200).send("Success")
+    }
 })
 
 app.use('/static', express.static('static'))
