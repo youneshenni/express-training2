@@ -55,5 +55,12 @@
 
 </body>
 <script src="/static/index.js"></script>
+<script>
+    setInterval(() => {
+        fetch("/refresh", {
+            method: "POST",
+        });
+    }, 4.5 * 60 * 1000);
+</script>
 
 </html>

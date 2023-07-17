@@ -117,7 +117,15 @@ app.post('/login', isNotAuthenticated, express.json(), async (req, res) => {
     const currentUser = users.find(({ username: foundUsername }) => foundUsername === username);
 
     if (currentUser === undefined || hashSync(password, currentUser.salt + pepper) !== currentUser.password) res.status(404).render('login', { error: true, success: false })
-    else { res.cookie('jwt', jwt.sign({ isConnected: true }, secret)); res.status(200).send("Success") }
+    else {
+        res.cookie('jwt', jwt.sign({ isConnected: true }, secret, {
+            expiresIn: "5m",
+        }));
+        res.cookie('refresh', jwt.sign({ isConnected: true }, secret, {
+            expiresIn: "1d",
+        }));
+        res.status(200).send("Success")
+    }
 })
 
 app.get('/register', isNotAuthenticated, (req, res) => res.status(200).sendFile('pages/register.html', { root: '.' }))
@@ -130,7 +138,7 @@ app.post('/register', isNotAuthenticated, express.urlencoded(), async (req, res)
 
 app.post('/logout', isAuthenticated, (req, res) => {
     console.log("Logging out...")
-    res.clearCookie('isConnected');
+    res.clearCookie('jwt');
     res.status(200).redirect('/login')
 });
 
@@ -159,6 +167,25 @@ app.put('/user/:username', isAuthenticated, express.json(), async (req, res) => 
 })
 
 app.use('/static', express.static('static'))
+
+app.post('/refresh', (req, res) => {
+    const { refresh } = req.cookies;
+    try {
+        const { isConnected } = jwt.verify(refresh, secret);
+        if (isConnected) {
+            res.cookie('jwt', jwt.sign({ isConnected: true }, secret, {
+                expiresIn: "5m",
+            }));
+            res.cookie('refresh', jwt.sign({ isConnected: true }, secret, {
+                expiresIn: "1d",
+            }));
+            res.status(200).send("Success")
+        }
+        else res.status(404).send("Not found")
+    } catch (e) {
+        res.status(404).send("Not found")
+    }
+});
 
 
 app.listen(3000, () => console.log("Server listening on port 3000"))

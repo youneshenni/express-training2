@@ -4,3 +4,27 @@
 {"level":"info","message":"jwt malformed","name":"JsonWebTokenError","service":"user-service"}
 {"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
 {"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"level":"info","message":"jwt must be provided","name":"JsonWebTokenError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:02:38.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:02:38.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:02:38.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:02:38.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:18:58.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:18:58.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:18:58.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:22:01.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:22:01.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:22:01.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:22:01.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:23:48.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:23:48.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:23:48.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
+{"expiredAt":"2023-07-17T15:23:48.000Z","level":"info","message":"jwt expired","name":"TokenExpiredError","service":"user-service"}
